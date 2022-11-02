@@ -38,7 +38,7 @@
   (while (null ret)
     (ros::spin-once)
     (cond
-       ((substringp "六階の部屋" *speech*)
+       ((substringp "研究室" *speech*)
 	(send *ri* :speak-jp "ろくいちまるに案内します" :wait t)
 	(ros::ros-info "goal: /eng8/6f/room610-base")
 	(setq ret (send *scene* :spot "/eng8/6f/room610-base")))
