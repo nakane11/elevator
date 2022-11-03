@@ -266,9 +266,9 @@ class PlacementFinder(ConnectionBasedTransport):
                 plt.clf()
                 x, y = shapely_polygon.exterior.xy
                 plt.plot(x, y)
-                x, y = shapely_polygon.buffer(0.05).exterior.xy
+                x, y = shapely_polygon.buffer(0.2).exterior.xy
                 plt.plot(x, y)
-                x, y = shapely_polygon.buffer(-0.05).exterior.xy
+                x, y = shapely_polygon.buffer(-0.2).exterior.xy
                 plt.plot(x, y)
 
             shapely_box_polygons = []
@@ -281,13 +281,13 @@ class PlacementFinder(ConnectionBasedTransport):
                 box_polygon = shapely.geometry.MultiPoint(
                     projected_vertices).convex_hull
 
-                shapely_box_polygons.append(box_polygon.buffer(0.05))
+                shapely_box_polygons.append(box_polygon.buffer(0.2))
 
                 x, y = box_polygon.exterior.xy
                 if self.plot:
                     plt.plot(x, y)
 
-            points, n = points_within(shapely_polygon.buffer(-0.05),
+            points, n = points_within(shapely_polygon.buffer(-0.1),
                                    box_polygons=shapely_box_polygons)
             occupancy_msg.data = len(points)/float(n)
             orientation_coords = skrobot.coordinates.Coordinates()
