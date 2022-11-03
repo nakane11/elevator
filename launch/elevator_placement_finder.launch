@@ -1,0 +1,48 @@
+<launch>
+
+  <node name="dr_spaam_lidar_person_detection"
+        pkg="jsk_perception" type="lidar_person_detection_node.py"
+        output="screen">
+    <remap from="~input" to="/base_scan" />
+    <rosparam subst_value="true" >
+      map_link: /map
+      weight_file: "$(find jsk_perception)/trained_data/lidar_person_detection/ckpt_jrdb_ann_dr_spaam_e20.pth"
+      detector_model: "DR-SPAAM"
+      conf_thresh: 0.8
+      stride: 1
+      panoramic_scan: false
+      gpu: -1
+    </rosparam>
+  </node>
+
+  <node name="polygon_array_publisher"
+        pkg="jsk_recognition_utils" type="polygon_array_publisher.py"
+        output="screen">
+    <rosparam>
+      publish_coeffs: true
+      frame_id: base_footprint
+      polygons:
+      - points:
+        - [0.70, 0.55, 0.0]
+        - [-0.60, 0.55, 0.0]
+        - [-0.60,  -1.50, 0.0]
+        - [0.70,  -1.50, 0.0]
+    </rosparam>
+  </node>
+
+  <node name="person_pose_array_to_boxes"
+        pkg="elevator" type="person_pose_array_to_boxes.py"
+        output="screen" >
+    <remap from="~input" to="/dr_spaam_lidar_person_detection/output" />
+  </node>
+  
+  <node name="placement_finder"
+        pkg="elevator" type="placement_finder.py"
+        output="screen" >
+    <remap from="~input/polygons" to="/polygon_array_publisher/output" />
+    <remap from="~input/coefficients" to="/polygon_array_publisher/output/coefficients" />
+    <remap from="~input/boxes" to="/person_pose_array_to_boxes/output" />
+    <param name="~with_boxes" value="true" />
+    <param name="~approximate_sync" value="true" />
+  </node>
+</launch>
