@@ -20,13 +20,13 @@
         output="screen">
     <rosparam>
       publish_coeffs: true
-      frame_id: base_footprint
+      frame_id: map
       polygons:
       - points:
-        - [0.70, 0.55, 0.0]
-        - [-0.60, 0.55, 0.0]
-        - [-0.60,  -1.50, 0.0]
-        - [0.70,  -1.50, 0.0]
+        - [2.975, -30.6, 0.0]
+        - [2.975, -31.4, 0.0]
+        - [4.525, -31.4, 0.0]
+        - [4.525, -30.6, 0.0]
     </rosparam>
   </node>
 
