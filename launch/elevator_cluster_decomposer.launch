@@ -5,14 +5,14 @@
   <arg name="input_cloud" value="/kinect_head/depth_registered/throttled/points" />
 
   <arg name="MANAGER" value="nodelet_manager" />
+
+  <group ns="move_inside_elevator" >
   <node name="$(arg MANAGER)"
         pkg="nodelet" type="nodelet" args="manager" />
 
   <node name="polygon_array_publisher"
         pkg="jsk_recognition_utils" type="polygon_array_publisher.py"
         output="screen" >
-    <remap from="~output" to="/elevator_polygon" />
-    <remap from="~output/coefficients" to="/elevator_polygon/coefficients" />
     <rosparam>
       publish_coeffs: true
       frame_id: map
@@ -27,12 +27,11 @@
 
   <node name="bounding_box_array_publisher"
         pkg="jsk_recognition_utils" type="bounding_box_array_publisher.py">
-    <remap from="~output" to="/elevator_box" />
     <rosparam>
       frame_id: map
       boxes:
-        - position: [3.75, -31.0, 1.1]
-          dimension: [1.55, 0.8, 2.0]
+      - position: [3.75, -31.0, 1.1]
+        dimension: [1.55, 0.8, 2.0]
     </rosparam>
   </node>
 
@@ -40,7 +39,7 @@
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/AttentionClipper $(arg MANAGER)" >
     <remap from="~input/points" to="$(arg input_cloud)" />
-    <remap from="~input/box_array" to="/elevator_box" />
+    <remap from="~input/box_array" to="bounding_box_array_publisher/output" />
     <rosparam>
       use_multiple_attention: true
       negative: false
@@ -49,14 +48,14 @@
     </rosparam>
   </node>
   
-  <node name="cluster_point_indices_decomposer_align_boxes_with_plane"
+  <node name="cluster_point_indices_decomposer"
         pkg="nodelet" type="nodelet"
         args="load jsk_pcl/ClusterPointIndicesDecomposer $(arg MANAGER)"
         respawn="true" >
     <remap from="~input" to="$(arg input_cloud)" />
-    <remap from="~target" to="/attention_clipper/output/cluster_point_indices" />
-    <remap from="~align_planes" to="/elevator_polygon" />
-    <remap from="~align_planes_coefficients" to="/elevator_polygon/coefficients" />
+    <remap from="~target" to="attention_clipper/output/cluster_point_indices" />
+    <remap from="~align_planes" to="polygon_array_publisher/output" />
+    <remap from="~align_planes_coefficients" to="polygon_array_publisher/output/coefficients" />
     <rosparam subst_value="true">
       align_boxes: true
       align_boxes_with_plane: false
@@ -66,5 +65,6 @@
       target_frame_id: base_link
     </rosparam>
   </node>
+  </group>
 
 </launch>
