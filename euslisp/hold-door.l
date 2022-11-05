@@ -3,22 +3,18 @@
 (ros::roseus-add-msgs "geometry_msgs")
 
 (defun hold-door ()
-  (send *pr2* :larm :angle-vector #f(50.2209 -6.54136 0.405612 36.0144 -39.8879 196.482 -48.175))
+  (send *pr2* :larm :angle-vector #f(-6.54136 0.405612 36.0144 -39.8879 196.482 -48.175 -41.5922))
   (send *ri* :angle-vector (send *pr2* :angle-vector))
-  ;; (send *ri* :angle-vector #f(50.2209 -6.54136 0.405612 36.0144 -39.8879 196.482 -48.175 -41.5922 -6.5557 62.9917 -89.2749 -121.542 -110.49 -105.675 12.3937 2.4067 -21.2682))
   (send *ri* :wait-interpolation)
 )
 
 (defun release-door ()
-  (send *pr2* :larm :angle-vector #f(50.2209 -6.13284 2.65459 50.2644 -80.076 142.627 -47.7512))
+  (send *pr2* :larm :angle-vector #f(-6.13284 2.65459 50.2644 -80.076 142.627 -47.7512 -35.8786))
   (send *ri* :angle-vector (send *pr2* :angle-vector))
-  ;; (send *ri* :angle-vector #f(50.2209 -6.13284 2.65459 50.2644 -80.076 142.627 -47.7512 -35.8786 -6.5557 62.8415 -89.2749 -121.542 -110.537 -105.675 12.3937 -40 9))
-  (send *pr2* :larm :angle-vector #f(50.2209 -4.99279 17.0257 64.7258 -112.533 125.67 -45.4902))
+  (send *pr2* :larm :angle-vector #f(-4.99279 17.0257 64.7258 -112.533 125.67 -45.4902 -28.2678))
   (send *ri* :angle-vector (send *pr2* :angle-vector))
-  ;; (send *ri* :angle-vector #f(50.2209 -4.99279 17.0257 64.7258 -112.533 125.67 -45.4902 -28.2678 -6.5842 62.7736 -89.2749 -121.542 -116.625 -105.675 12.3937 -20 6))
-  (send *pr2* :larm :angle-vector #f(50.2209 7.828 61.5157 64.7166 -120.629 112.883 -56.9076))
+  (send *pr2* :larm :angle-vector #f(7.828 61.5157 64.7166 -120.629 112.883 -56.9076 35.2308))
   (send *ri* :angle-vector (send *pr2* :angle-vector))
-  ;; (send *ri* :angle-vector #f(50.2209 7.828 61.5157 64.7166 -120.629 112.883 -56.9076 35.2308 -4.73638 70.1555 -89.4494 -121.542 -116.804 -109.334 12.4386 0 0))
   )
 
 (defun wait-people-in-elevator (num)
@@ -45,14 +41,19 @@
 (defun find-space (center-x center-y)
   (ros::ros-info "find space...")
   (let* ((msg (one-shot-subscribe "/elevator_placement/placement_finder/output/poses" geometry_msgs::PoseArray))
-         (poses (send msg :poses)))
+         (poses (send msg :poses))
+         )
     (when (null poses)
       (return-from find-space (find-space (center-x center-y))))
     (sort poses #'(lambda (x y)
                     (let* ((x-pos (send x :position)) (y-pos (send y :position))
                            (x-dist (+ (abs (- (send x-pos :x) center-x)) (abs (- (send x-pos :y) center-y))))
                            (y-dist (+ (abs (- (send y-pos :x) center-x)) (abs (- (send y-pos :y) center-y)))))
-                      (>= x-dist y-dist))))
+                      (cond
+                       ((= x-dist y-dist)
+                        (< (send x-pos :x) (send y-pos :x)))
+                       (t
+                        (> x-dist y-dist))))))
     poses)
   )
 
@@ -63,15 +64,22 @@
   (dotimes (i (min retry (length spaces)))
     (setq space (elt spaces i))
     (setq ret (send *ri* :move-to (ros::tf-pose->coords space) :retry 1 :frame-id "map"))
-    (when ret
-      (return t))
+    (if ret
+        (return t)
+      (rotation-unsafe (ros::tf-pose->coords space))
+      )
     )
   nil
 )
 
+(defun rotation-unsafe (target)
+  (let ((diff (elt (send (send *ri* :state :worldcoords) :difference-rotation target) 2)))
+    (send *ri* :go-pos-unsafe 0 0 (rad2deg diff))
+    ))
+
 ;; (setq *elevator-6f-inside-center* (make-cascoords :pos (float-vector 3917.656 -30975.841 19998.982) :rpy (float-vector 1.583 -0.0 0.0)))
 (setq *elevator-6f-inside-center* (make-cascoords :pos (float-vector 3917.656 -30800 19998.982) :rpy (float-vector 1.583 0.0 0.0)))
-(setq *elevator-6f-inside-left* (make-cascoords :pos (float-vector 3254.766 -31112.623 20000.97) :rpy (float-vector 1.594 0.002 0.0))) 
+(setq *elevator-6f-inside-left* (make-cascoords :pos (float-vector 3254.766 -31112.623 20000.97) :rpy (float-vector 1.594 0.002 0.0)))
 
 (defun go-inside-elevator ()
   (pr2-tuckarm-pose :larm)
