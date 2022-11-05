@@ -1,5 +1,6 @@
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
 (ros::roseus-add-msgs "jsk_recognition_msgs")
+(ros::roseus-add-msgs "geometry_msgs")
 
 (defun hold-door ()
   (send *ri* :angle-vector #f(50.2209 -6.54136 0.405612 36.0144 -39.8879 196.482 -48.175 -41.5922 -6.5557 62.9917 -89.2749 -121.542 -110.49 -105.675 12.3937 2.4067 -21.2682))
@@ -16,6 +17,7 @@
   )
 
 (defun wait-people-in-elevator (num)
+  (ros::ros-info "wait people in elevator...")
   (while t
     (ros::spin-once)
     (let* ((msg (one-shot-subscribe "/move_inside_elevator/cluster_point_indices_decomposer/boxes" jsk_recognition_msgs::BoundingBoxArray))
@@ -26,13 +28,26 @@
                           (/ (send dimensions :z) 2.0)))
           (setq ratio (/ (+ (/ (send dimensions :z) (send dimensions :x)) (/ (send dimensions :z) (send dimensions :x))) 2))
           (ros::ros-info (format nil "height:~A ratio:~A" height ratio))
-          (when (and (> height 1.1) (> ratio 2))
+          (when (and (> height 1.1) (> ratio 1.2))
             (incf people))))
       (ros::ros-info (format nil "find ~A people" people))
       (if (>= people num)
           (return))
       )
     )
+  )
+
+(defun find-space (center-x center-y)
+  (let* ((msg (one-shot-subscribe "/elevator_placement/placement_finder/output/poses" geometry_msgs::PoseArray))
+         (poses (send msg :poses)))
+    (when (null poses)
+      (return-from find-space (find-space (center-x center-y))))
+    (sort poses #'(lambda (x y)
+                    (let* ((x-pos (send x :position)) (y-pos (send y :position))
+                           (x-dist (+ (abs (- (send x-pos :x) center-x)) (abs (- (send x-pos :y) center-y))))
+                           (y-dist (+ (abs (- (send y-pos :x) center-x)) (abs (- (send y-pos :y) center-y)))))
+                      (>= x-dist y-dist))))
+    (elt pose 0))
   )
 
 (setq *elevator-6f-inside-center* (make-cascoords :pos (float-vector 3917.656 -30975.841 19998.982) :rpy (float-vector 1.583 -0.0 0.0)))
@@ -43,14 +58,15 @@
   (send *ri* :move-to *elevator-6f-inside-left*)
   ;; (setq initial-occupancy (one-shot-subscribe "/placement_finder/output/occupancy" std_msgs::Float32))
   (hold-door)
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
   (send *pr2* :head :angle-vector #f(-64.7933 12.354))
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
   ;; check people in
   (wait-people-in-elevator 1)
-  ;; (while t
-  ;;   (setq occupancy (one-shot-subscribe "/placement_finder/output/occupancy" std_msgs::Float32))
-  ;;   (when (< (+ (send occupancy :data) 0.2) (send initial-occupancy :data))
-  ;;     (return))
   (release-door)
   )
+
+
+;; (setq space (find-space 3.75 -31.1))
+;; (send *ri* :move-to (ros::tf-pose->coords space) :frame-id "map")
