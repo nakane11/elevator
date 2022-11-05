@@ -20,8 +20,8 @@ class PersonPoseArrayToBoxes(ConnectionBasedTransport):
 	self._tf_buffer = tf2_ros.Buffer(rospy.Duration(10))
         self._tf_listener = tf2_ros.TransformListener(self._tf_buffer)
 
-        self.base_frame_id = rospy.get_param("~base_frame_id", "base_footprint")
-        rospy.loginfo("target frame_id: {}".format(self.base_frame_id))
+        self.publish_frame_id = rospy.get_param("~publish_frame_id", "base_footprint")
+        rospy.loginfo("target frame_id: {}".format(self.publish_frame_id))
         self.pub = self.advertise('~output', BoundingBoxArray, queue_size=1)
 
     def subscribe(self):
@@ -34,7 +34,7 @@ class PersonPoseArrayToBoxes(ConnectionBasedTransport):
         try:
             pykdl_transform_base_to_laser = tf2_geometry_msgs.transform_to_kdl(
                 self._tf_buffer.lookup_transform(
-                    self.base_frame_id,
+                    self.publish_frame_id,
                     msg.header.frame_id,
                     msg.header.stamp,
                     timeout=rospy.Duration(self._duration_timeout)))
@@ -52,7 +52,7 @@ class PersonPoseArrayToBoxes(ConnectionBasedTransport):
             pose_array.append([x, y, z])
         
         header = deepcopy(msg.header)
-        header.frame_id = self.base_frame_id
+        header.frame_id = self.publish_frame_id
         bbox_array_msg = BoundingBoxArray(header=header)
 
         for pose in pose_array:
