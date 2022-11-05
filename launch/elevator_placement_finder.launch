@@ -1,5 +1,5 @@
 <launch>
-
+  <group ns="elevator_placement" >
   <node name="dr_spaam_lidar_person_detection"
         pkg="jsk_perception" type="lidar_person_detection_node.py"
         output="screen">
@@ -33,16 +33,18 @@
   <node name="person_pose_array_to_boxes"
         pkg="elevator" type="person_pose_array_to_boxes.py"
         output="screen" >
-    <remap from="~input" to="/dr_spaam_lidar_person_detection/output" />
+    <remap from="~input" to="dr_spaam_lidar_person_detection/output" />
+    <param name="~publish_frame_id" value="map"/>
   </node>
   
   <node name="placement_finder"
         pkg="elevator" type="placement_finder.py"
         output="screen" >
-    <remap from="~input/polygons" to="/polygon_array_publisher/output" />
-    <remap from="~input/coefficients" to="/polygon_array_publisher/output/coefficients" />
-    <remap from="~input/boxes" to="/person_pose_array_to_boxes/output" />
+    <remap from="~input/polygons" to="polygon_array_publisher/output" />
+    <remap from="~input/coefficients" to="polygon_array_publisher/output/coefficients" />
+    <remap from="~input/boxes" to="person_pose_array_to_boxes/output" />
     <param name="~with_boxes" value="true" />
     <param name="~approximate_sync" value="true" />
   </node>
+  </group>
 </launch>
