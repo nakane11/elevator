@@ -5,6 +5,7 @@ Panels:
     Property Tree Widget:
       Expanded:
         - /Vision1/NarrowStereoLeft1
+        - /PoseArray1
       Splitter Ratio: 0.5575540065765381
     Tree Height: 1246
   - Class: rviz/Selection
@@ -838,8 +839,8 @@ Visualization Manager:
       Name: Vision
     - Alpha: 1
       Arrow Length: 0.30000001192092896
-      Axes Length: 0.30000001192092896
-      Axes Radius: 0.009999999776482582
+      Axes Length: 0.10000000149011612
+      Axes Radius: 0.029999999329447746
       Class: rviz/PoseArray
       Color: 255; 25; 0
       Enabled: true
@@ -915,25 +916,25 @@ Visualization Manager:
   Views:
     Current:
       Class: rviz/Orbit
-      Distance: 15.898584365844727
+      Distance: 0.8411382436752319
       Enable Stereo Rendering:
         Stereo Eye Separation: 0.05999999865889549
         Stereo Focal Distance: 1
         Swap Stereo Eyes: false
         Value: false
       Focal Point:
-        X: 2.7783868312835693
-        Y: -0.7765430808067322
-        Z: 1.930525779724121
+        X: 2.839409112930298
+        Y: -15.385435104370117
+        Z: 3.6948800086975098
       Focal Shape Fixed Size: true
       Focal Shape Size: 0.05000000074505806
       Invert Z Axis: false
       Name: Current View
       Near Clip Distance: 0.009999999776482582
-      Pitch: 0.7397966384887695
+      Pitch: 1.4097964763641357
       Target Frame: base_link
       Value: Orbit (rviz)
-      Yaw: 1.2988566160202026
+      Yaw: 1.4788577556610107
     Saved: ~
 Window Geometry:
   Displays:

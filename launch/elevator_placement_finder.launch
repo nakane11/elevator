@@ -23,10 +23,10 @@
       frame_id: map
       polygons:
       - points:
-        - [2.975, -30.6, 0.0]
-        - [2.975, -31.4, 0.0]
-        - [4.525, -31.4, 0.0]
-        - [4.525, -30.6, 0.0]
+        - [2.855, -30.6, 0.0]
+        - [2.855, -31.6, 0.0]
+        - [4.645, -31.6, 0.0]
+        - [4.645, -30.6, 0.0]
     </rosparam>
   </node>
 
@@ -43,8 +43,12 @@
     <remap from="~input/polygons" to="polygon_array_publisher/output" />
     <remap from="~input/coefficients" to="polygon_array_publisher/output/coefficients" />
     <remap from="~input/boxes" to="person_pose_array_to_boxes/output" />
-    <param name="~with_boxes" value="true" />
-    <param name="~approximate_sync" value="true" />
+    <rosparam>
+      with_boxes: true
+      approximate_sync: true
+      polygon_buffer: 0.35
+      box_buffer: 0.4
+    </rosparam>
   </node>
   </group>
 </launch>

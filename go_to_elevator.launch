@@ -1,3 +1,0 @@
-<launch>
-  <include file="$(find virtual_force_drag)/launch/pr2_lead.launch" />
-</launch>
