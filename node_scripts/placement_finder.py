@@ -295,6 +295,7 @@ class PlacementFinder(ConnectionBasedTransport):
             orientation_coords = skrobot.coordinates.Coordinates()
             skrobot.coordinates.geo.orient_coords_to_axis(
                 orientation_coords, - normal)
+            orientation_coords.rotate(np.pi / 2, "z")
             q_wxyz = orientation_coords.quaternion
             for p in points:
                 pose_msg = geometry_msgs.msg.Pose()
