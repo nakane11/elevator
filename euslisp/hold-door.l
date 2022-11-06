@@ -5,7 +5,6 @@
 (defun hold-door ()
   (send *pr2* :larm :angle-vector #f(-6.54136 0.405612 36.0144 -39.8879 196.482 -48.175 -41.5922))
   (send *ri* :angle-vector (send *pr2* :angle-vector))
-  (send *ri* :wait-interpolation)
 )
 
 (defun release-door ()
@@ -81,10 +80,12 @@
 (setq *elevator-6f-inside-center* (make-cascoords :pos (float-vector 3917.656 -30800 19998.982) :rpy (float-vector 1.583 0.0 0.0)))
 (setq *elevator-6f-inside-left* (make-cascoords :pos (float-vector 3254.766 -31112.623 20000.97) :rpy (float-vector 1.594 0.002 0.0)))
 
-(defun go-inside-elevator ()
-  (pr2-tuckarm-pose :larm)
+(defun go-inside-elevator (num)
+  (pr2-tuckarm-pose :larm :outside)
   (send *ri* :clear-costmap)
-  (send *ri* :move-to *elevator-6f-inside-center*)
+  (setq ret (send *ri* :move-to *elevator-6f-inside-center* :retry 1))
+  (unless ret
+    (rotation-unsafe (ros::tf-pose->coords *elevator-6f-inside-center*)))
   (send *ri* :clear-costmap)
   (send *ri* :move-to *elevator-6f-inside-left*)
   ;; (move-inside 4)
@@ -95,7 +96,7 @@
   (send *ri* :angle-vector (send *pr2* :angle-vector))
   (send *ri* :wait-interpolation)
   ;; check people in
-  (wait-people-in-elevator 1)
+  (wait-people-in-elevator num)
   (release-door)
   )
 
